@@ -1,42 +1,64 @@
-import Buttons from "./buttons"
+import { useEffect, useRef } from "react";
+import mapboxgl from "mapbox-gl";
+import "mapbox-gl/dist/mapbox-gl.css";
+
+import Buttons from "./buttons";
 import Alerts from "./alerts";
 
-export default function Map() {
-    return(
-        <>
-        <div className="relative bg-gray-200 w-7xl h-128 flex items-center justify-center m-auto rounded-2xl">
-        map here
-        <div className="absolute top-4 right-6 flex cursor-pointer font-semibold text-red-500">report <img src="https://img.icons8.com/?size=100&id=20844&format=png&color=000000" width={25} className="ml-1"/> </div>
-       <div className="absolute bottom-4 right-6 flex flex-col items-center space-y-2">
+export default function MapView() {
+  const mapContainerRef = useRef(null);
+
+  useEffect(() => {
+    mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
+
+    const map = new mapboxgl.Map({
+      container: mapContainerRef.current,
+      style: "mapbox://styles/mapbox/streets-v12",
+      center: [80.7718, 7.8731], // Sri Lanka
+      zoom: 7,
+    });
+
+    new mapboxgl.Marker()
+      .setLngLat([80.7718, 7.8731])
+      .addTo(map);
+
+    return () => map.remove();
+  }, []);
+
+  return (
+    <div className="relative h-[400px] w-full rounded-lg overflow-hidden">
+      <div ref={mapContainerRef} className="h-full w-full" />
+
+      {/* Report */}
+      <div className="absolute top-4 right-6 flex items-center cursor-pointer font-semibold text-red-500">
+        report
+        <img
+          src="https://img.icons8.com/?size=100&id=20844&format=png&color=000000"
+          width={25}
+          className="ml-1"
+        />
+      </div>
+
+      {/* Stats */}
+      <div className="absolute bottom-4 right-6 flex flex-col space-y-2">
         <div className="bg-gray-600 p-2 text-white rounded-3xl w-40 text-center">
-            Advice: 100
+          Advice: 100
         </div>
         <div className="bg-gray-600 p-2 text-white rounded-3xl w-40 text-center">
-            Safety Index: 100
+          Safety Index: 100
         </div>
-        </div>
+      </div>
 
-        <div className="absolute top-4 left-6">
-            <img
-    src="https://img.icons8.com/?size=100&id=byhkZFCWAF9y&format=png&color=000000"
-    alt="weather"
-    className="w-7 h-7 rounded-full"
-  />
-        </div>
-
-
-        <div className="absolute bottom-4 left-6 flex items-center space-x-4">
+      {/* Location */}
+      <div className="absolute bottom-4 left-6 bg-white/80 p-3 rounded-xl flex items-center space-x-4">
         <div>
-      <h1 className="text-lg font-semibold">You are at Park</h1>
-      <p className="text-sm text-gray-600">A park area</p>
-         </div>
+          <h1 className="text-lg font-semibold">You are at Park</h1>
+          <p className="text-sm text-gray-600">A park area</p>
+        </div>
         <Buttons>Refetch</Buttons>
-        </div>
-        <Alerts />
+      </div>
 
-
-        </div>
-
-        </>
-    );
+      <Alerts />
+    </div>
+  );
 }
