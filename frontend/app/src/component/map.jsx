@@ -7,22 +7,41 @@ import Alerts from "./alerts";
 
 export default function MapView() {
   const mapContainerRef = useRef(null);
+  const mapRef = useRef(null);
 
   useEffect(() => {
     mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
-    const map = new mapboxgl.Map({
+    if (!mapContainerRef.current) return;
+
+    // 1. Create map FIRST (Mapbox requirement)
+    mapRef.current = new mapboxgl.Map({
       container: mapContainerRef.current,
       style: "mapbox://styles/mapbox/streets-v12",
-      center: [80.7718, 7.8731], // Sri Lanka
+      center: [80.7718, 7.8731], // fallback
       zoom: 7,
     });
 
-    new mapboxgl.Marker()
-      .setLngLat([80.7718, 7.8731])
-      .addTo(map);
+    // 2. Add geolocation control (official way)
+    const geolocate = new mapboxgl.GeolocateControl({
+      positionOptions: {
+        enableHighAccuracy: true,
+      },
+      fitBoundsOptions: {
+        maxZoom: 15,
+      },
+      trackUserLocation: false, // set true if you want live tracking
+      showUserLocation: true,
+    });
 
-    return () => map.remove();
+    mapRef.current.addControl(geolocate);
+
+    // 3. Trigger permission + auto zoom once map loads
+    mapRef.current.on("load", () => {
+      geolocate.trigger();
+    });
+
+    return () => mapRef.current.remove();
   }, []);
 
   return (
